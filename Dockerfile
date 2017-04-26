@@ -23,4 +23,4 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 WORKDIR $GOPATH
 
 # Install go-junit-report
-RUN go get -v -u github.com/jstemmer/go-junit-report
+RUN go get -u github.com/jstemmer/go-junit-report
