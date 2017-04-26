@@ -1,2 +1,2 @@
-# ci
-CI support
+# CI
+CI support for Domainr
