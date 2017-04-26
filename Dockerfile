@@ -1,3 +1,4 @@
+# Base image described here: https://devcenter.heroku.com/articles/stack-packages
 FROM heroku/heroku:16-build
 
 # Install Mercurial
