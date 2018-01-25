@@ -54,7 +54,7 @@ USER ${RUNTIME_USER}
 # Want to just remove the Go image's GOPATH setting but while we can replace
 # ENV in Docker, we can't unset.  So suck it up and just set it, old style.
 ENV GOPATH=/home/${RUNTIME_USER}/go
-ENV PATH ${GOPATH}/bin:/usr/local/go/bin:$PATH
+ENV PATH=${GOPATH}/bin:/usr/local/go/bin:$PATH
 
 # Install our Go tools
 RUN go version && \
