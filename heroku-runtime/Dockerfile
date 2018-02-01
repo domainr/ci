@@ -3,13 +3,13 @@ FROM heroku/heroku:16-build
 
 # Install Mercurial
 RUN apt-get update && apt-get install -y --no-install-recommends \
-		mercurial \
+	mercurial \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Install Go
-ENV GOLANG_VERSION 1.8.1
+ENV GOLANG_VERSION 1.9.3
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA256 a579ab19d5237e263254f1eac5352efcf1d70b9dacadb6d6bb12b0911ede8994
+ENV GOLANG_DOWNLOAD_SHA256 a4da5f4c07dfda8194c4621611aeb7ceaab98af0b38bfb29e1be2ebb04c3556c
 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
 	&& echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \

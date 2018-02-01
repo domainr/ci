@@ -1,4 +1,4 @@
-ARG CIRCLE_GOLANG_VERSION=1.9.2
+ARG CIRCLE_GOLANG_VERSION=1.9.3
 FROM circleci/golang:${CIRCLE_GOLANG_VERSION}
 
 # Install Heroku
@@ -13,4 +13,3 @@ RUN cd /tmp \
 RUN go get -u -v github.com/jstemmer/go-junit-report
 RUN go get -u -v github.com/nbio/slugger
 RUN go get -u -v github.com/nbio/cart
-
