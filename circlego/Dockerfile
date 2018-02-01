@@ -13,4 +13,3 @@ RUN cd /tmp \
 RUN go get -u -v github.com/jstemmer/go-junit-report
 RUN go get -u -v github.com/nbio/slugger
 RUN go get -u -v github.com/nbio/cart
-
