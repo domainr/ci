@@ -1,9 +1,14 @@
-ARG GOLANG_BASE_IMAGE=1.9.3-stretch
+ARG GOLANG_BASE_IMAGE=1.9.4-stretch
 FROM golang:${GOLANG_BASE_IMAGE}
+ARG GOLANG_VERSION=1.9.4
+#
 # While the main key is: ARG DOCKER_REPO_KEY=9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 # the apt repo signed-by constraint checks the _subkey_, so:
 ARG DOCKER_REPO_KEY=D3306A018370199E527AE7997EA0A9C3F273FCD8
-ARG GOLANG_VERSION=1.9.3
+#
+# Dep readme says "It is strongly recommended that you use a released version."
+ARG DEP_VERSION=0.4.1
+#
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
@@ -43,6 +48,19 @@ RUN cd /tmp \
 	&& ln -s /usr/local/lib/heroku/bin/heroku /usr/local/bin/heroku \
 	&& rm heroku.tar.gz \
 	&& heroku version
+
+# Install Dep
+# There are no signatures, only a checksum to download from the same place, which buys us nothing security-wise, but does
+# let us know about corruption.  We'll check it, most easily by downloading to same name that was signed.
+RUN cd /tmp && mkdir release \
+	&& curl -fsSL "https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64" -o release/dep-linux-amd64 \
+	&& have="$(sha256sum release/dep-linux-amd64)" \
+	&& want="$(curl -fsSL "https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64.sha256")" \
+	&& [ ".$have" = ".$want" ] \
+	&& echo "checksum match: $have" \
+	&& chmod 0755 release/dep-linux-amd64 \
+	&& mv release/dep-linux-amd64 /usr/local/bin/dep \
+	&& dep version
 
 WORKDIR /home/${RUNTIME_USER}
 # We don't use /go because we don't build as root and 777 permissions are daft
