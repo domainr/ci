@@ -2,7 +2,16 @@
 
 CI support for Domainr
 
-Used to create: `domainr/docker-go:go1.9.4-docker17.12.0-ce` or the like
+At the moment, this is just a Dockerfile, used to create `domainr/ci` on
+Docker Hub as a public image.
 
-Possibly used in future builds, having the Docker client tool to talk to a
-remote docker server, so should work with Circle CI's `setup_remote_docker`.
+**Nothing proprietary or secret goes in this image.**
+
+We want to get new stable releases of Go quickly, so use the Golang upstreams
+which are fast enough, then add in whatever other packages and tools we
+expect.
+
+We include the docker client, to work with Circle CI's `setup_remote_docker`
+(where a container talks to docker to create images from inside docker).
+
+We also include `heroku`, `dep` and various other things.
