@@ -15,6 +15,7 @@ ARG RUNTIME_GID=1001
 ENV RUNTIME_USER=${RUNTIME_USER}
 
 # need 'zip' for slug build
+# need 'nc' for sanity checks in one project; deb netcat-traditional
 
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	apt-get update \
@@ -22,7 +23,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	&& apt-get install -q -y --no-install-recommends \
 		apt-transport-https \
 		software-properties-common \
-		zip \
+		netcat-traditional netcat zip \
 	&& true
 # defer removing /var/lib/apt/lists/* until done with apt-get below
 
