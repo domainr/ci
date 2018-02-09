@@ -14,12 +14,15 @@ ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
 ENV RUNTIME_USER=${RUNTIME_USER}
 
+# need 'zip' for slug build
+
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	apt-get update \
 	&& apt-get -q -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" upgrade \
 	&& apt-get install -q -y --no-install-recommends \
 		apt-transport-https \
 		software-properties-common \
+		zip \
 	&& true
 # defer removing /var/lib/apt/lists/* until done with apt-get below
 
