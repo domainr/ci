@@ -9,13 +9,24 @@ ARG DOCKER_REPO_KEY=D3306A018370199E527AE7997EA0A9C3F273FCD8
 # Dep readme says "It is strongly recommended that you use a released version."
 ARG DEP_VERSION=0.4.1
 #
+ARG NODE_VERSION=9.5.0
+ARG YARN_VERSION=1.3.2
+#
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
 ENV RUNTIME_USER=${RUNTIME_USER}
 
+# We import PGP keys from local disk instead of depending upon the keyserver swamps
+# Run fetch-signing-keys to go fishing, then commit the resulting PGP-keys.txt file.
+COPY PGP-keys.txt .
+RUN gpg --import PGP-keys.txt && rm -v PGP-keys.txt && gpg --batch --list-keys </dev/null
+
 # need 'zip' for slug build
 # need 'nc' for sanity checks in one project; deb netcat-traditional
+#
+# We also spin up instances for debugging builds, so needed for my sanity:
+#   bind9utils chrpath dnsutils ed gdb-minimal lsof net-tools pcregrep procps rsync sysstat tcpdump vim-nox
 
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	apt-get update \
@@ -24,6 +35,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 		apt-transport-https \
 		software-properties-common \
 		netcat-traditional netcat zip \
+		bind9utils chrpath dnsutils ed gdb-minimal lsof net-tools pcregrep procps rsync sysstat tcpdump vim-nox \
 	&& true
 # defer removing /var/lib/apt/lists/* until done with apt-get below
 
@@ -43,6 +55,45 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 
 RUN groupadd -g ${RUNTIME_GID} ${RUNTIME_USER} && \
     useradd -p '*' -u ${RUNTIME_UID} -g ${RUNTIME_USER} -m ${RUNTIME_USER}
+
+# Install Node
+# This is mostly from nodejs/docker-node but I cleaned up various things
+# (checksum verifications, curl, gpg invocation, etc)
+# We add _showing_ a computed checksum so that it's part of the build output,
+# which is logged and retained; that way we get not just "it matched something
+# which we thought was good" but the actual value.
+RUN cd /tmp && ARCH= \
+	&& dpkgArch="$(dpkg --print-architecture)" \
+	&& case "${dpkgArch##*-}" in \
+	amd64) ARCH='x64';; \
+	ppc64el) ARCH='ppc64le';; \
+	s390x) ARCH='s390x';; \
+	arm64) ARCH='arm64';; \
+	armhf) ARCH='armv7l';; \
+	i386) ARCH='x86';; \
+	*) echo "unsupported architecture"; exit 1 ;; \
+	esac \
+	&& TARBALL="node-v${NODE_VERSION}-linux-${ARCH}.tar.xz" SRCURLDIR="https://nodejs.org/dist/v${NODE_VERSION}" \
+	&& curl -fsSL --remote-name-all --compressed "${SRCURLDIR}/${TARBALL}" "${SRCURLDIR}/SHASUMS256.txt.asc" \
+	&& gpg </dev/null --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
+	&& sha256sum --ignore-missing -c SHASUMS256.txt \
+	&& sha256sum >&2 "${TARBALL}" \
+	&& tar -xJf "${TARBALL}" -C /usr/local --strip-components=1 --no-same-owner \
+	&& rm "${TARBALL}" SHASUMS256.txt.asc SHASUMS256.txt \
+	&& ln -s /usr/local/bin/node /usr/local/bin/nodejs
+
+# Install Yarn
+# Commands from same source as Node, same sorts of changes.
+RUN cd /tmp \
+	&& TARBALL="yarn-v${YARN_VERSION}.tar.gz" SRCURLDIR="https://yarnpkg.com/downloads/${YARN_VERSION}" \
+	&& curl -fsSL --remote-name-all --compressed "${SRCURLDIR}/${TARBALL}" "${SRCURLDIR}/${TARBALL}.asc" \
+	&& gpg </dev/null --batch --verify "${TARBALL}.asc" "${TARBALL}" \
+	&& sha256sum >&2 "${TARBALL}" \
+	&& mkdir -pv /opt/yarn \
+	&& tar -xzf "${TARBALL}" -C /opt/yarn --strip-components=1 \
+	&& ln -s /opt/yarn/bin/yarn /usr/local/bin/yarn \
+	&& ln -s /opt/yarn/bin/yarn /usr/local/bin/yarnpkg \
+	&& rm -fv "${TARBALL}.asc" "${TARBALL}"
 
 # Install Heroku
 RUN cd /tmp \
@@ -84,3 +135,13 @@ RUN go version && \
 	go get -u -v github.com/nbio/slugger && \
 	go get -u -v github.com/nbio/cart && \
 	true
+
+# Unlike every other instruction, LABELs coalesce so we only introduce one layer here.
+# The MAINTAINER instruction is deprecated.
+LABEL maintainer="ping@domainr.com"
+LABEL io.domainr.baseimage="golang:${GOLANG_BASE_IMAGE}"
+LABEL io.domainr.versions.go="${GOLANG_VERSION}"
+LABEL io.domainr.versions.dep="${DEP_VERSION}"
+LABEL io.domainr.versions.node="${NODE_VERSION}"
+LABEL io.domainr.versions.yarn="${YARN_VERSION}"
+LABEL io.domainr.runtimeuser="${RUNTIME_USER}"
