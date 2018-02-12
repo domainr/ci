@@ -16,6 +16,7 @@ ENV RUNTIME_USER=${RUNTIME_USER}
 
 # need 'zip' for slug build
 # need 'nc' for sanity checks in one project; deb netcat-traditional
+# need 'git-hub' for GitHub's hub command, for one-off runners using this CI image
 
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	apt-get update \
@@ -24,6 +25,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 		apt-transport-https \
 		software-properties-common \
 		netcat-traditional netcat zip \
+		git-hub \
 	&& true
 # defer removing /var/lib/apt/lists/* until done with apt-get below
 
