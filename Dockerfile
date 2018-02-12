@@ -24,6 +24,7 @@ RUN gpg --import PGP-keys.txt && rm -v PGP-keys.txt && gpg --batch --list-keys <
 
 # need 'zip' for slug build
 # need 'nc' for sanity checks in one project; deb netcat-traditional
+# need 'git-hub' for GitHub's hub command, for one-off runners using this CI image
 #
 # We also spin up instances for debugging builds, so needed for my sanity:
 #   bind9utils chrpath dnsutils ed gdb-minimal lsof net-tools pcregrep procps rsync sysstat tcpdump vim-nox
@@ -35,6 +36,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 		apt-transport-https \
 		software-properties-common \
 		netcat-traditional netcat zip \
+		git-hub \
 		bind9utils chrpath dnsutils ed gdb-minimal lsof net-tools pcregrep procps rsync sysstat tcpdump vim-nox \
 	&& true
 # defer removing /var/lib/apt/lists/* until done with apt-get below
@@ -120,6 +122,20 @@ RUN cd /tmp && mkdir release \
 WORKDIR /home/${RUNTIME_USER}
 # We don't use /go because we don't build as root and 777 permissions are daft
 RUN rm -rf /go
+
+## TODO/maybe: breakpoint here, new FROM, as a multi-stage build, so we can use
+## --target to build only up until we drop privileges, and get two images out.
+## However, that requires duplicating a lot of `ARG` directives and is more pain
+## than I really want right now.  :(
+##
+## Short-term hack option:
+##   sed -n '/^USER/q;p' < Dockerfile > Dockerfile.intermediate
+##   docker build -f Dockerfile.intermediate -t intermediate .
+##
+## Otherwise, we're down to m4 pre-processing or repeating ARG a lot.
+## Neither is appealing.
+## Note: the build cache is still used for this case, so if you build one
+## and then the other, it should be fast.
 
 # nb: we don't have a password and have not set up sudo, so no way back at this
 # point.  Do we _want_ to still have root?
