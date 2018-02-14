@@ -68,6 +68,10 @@ RUN cd /tmp && mkdir release \
 	&& mv release/dep-linux-amd64 /usr/local/bin/dep \
 	&& dep version
 
+# Copy in local scripts
+COPY cmd/* /usr/local/bin/
+RUN chmod +x /usr/local/bin/*
+
 WORKDIR /home/${RUNTIME_USER}
 # We don't use /go because we don't build as root and 777 permissions are daft
 RUN rm -rf /go

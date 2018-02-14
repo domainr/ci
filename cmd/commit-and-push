@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+set -u
+
+BRANCH="${CIRCLE_BRANCH:-$1}"
+
+git commit -m "$(echo "${2:-"auto-update"}")"
+git push origin "$BRANCH"
