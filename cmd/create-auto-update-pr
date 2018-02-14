@@ -3,11 +3,16 @@
 set -eo pipefail
 set -u
 
+# Add your files to git, then invoke this script.
+# create-auto-update-pr "Commit message and pull request title"
+
 pr_msg() {
         cat <<MSG
 $1
 
+```
 $(git status --short)
+```
 MSG
 }
 
@@ -18,8 +23,8 @@ WORKING_BRANCH="auto-update/${BRANCH_DATE}/${CIRCLE_BRANCH}"
 git config hub.upstream "${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 git config hub.oauthtoken "$DOMAINRBOT_TOKEN"
 
-# Create new branch and PR
-git add --all .
-MSG="$(pr_msg "auto-update @ ${HUMAN_DATE}")"
-git commit -m "$(echo "${1:-"auto-update"}")"
-git hub pull new --create-branch "$WORKING_BRANCH" --base "$CIRCLE_BRANCH" -m "$MSG"
+# Push new remote branch and create PR
+COMMIT_MSG="$(pr_msg "${1:-"auto-update"}")"
+PR_MSG="$(pr_msg "${1:-"auto-update"} @ ${HUMAN_DATE}")"
+git commit -m "$COMMIT_MSG"
+git hub pull new --create-branch "$WORKING_BRANCH" --base "$CIRCLE_BRANCH" -m "$PR_MSG"
