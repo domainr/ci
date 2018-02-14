@@ -20,5 +20,6 @@ git config hub.oauthtoken "$DOMAINRBOT_TOKEN"
 
 # Create new branch and PR
 git add --all .
+MSG="$(pr_msg "auto-update @ ${HUMAN_DATE}")"
 git commit -m "$(echo "${1:-"auto-update"}")"
-git hub pull new --create-branch "$WORKING_BRANCH" --base "$CIRCLE_BRANCH" -m "$(pr_msg "auto-update @ ${HUMAN_DATE}")"
+git hub pull new --create-branch "$WORKING_BRANCH" --base "$CIRCLE_BRANCH" -m "$MSG"
