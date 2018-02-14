@@ -8,19 +8,17 @@ pr_msg() {
 $1
 
 $(git status --short)
-
-When \`dep\` can tell us what changed, we will add a summary here.
 MSG
 }
 
 # Config
 BRANCH_DATE="$(date -u +%Y-%m-%d-%H-%M-%S)"
 HUMAN_DATE="$(date -u '+%Y-%m-%d %H:%M:%S') UTC"
-WORKING_BRANCH="dep-auto-update/${BRANCH_DATE}/${CIRCLE_BRANCH}"
+WORKING_BRANCH="auto-update/${BRANCH_DATE}/${CIRCLE_BRANCH}"
 git config hub.upstream "${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 git config hub.oauthtoken "$DOMAINRBOT_TOKEN"
 
 # Create new branch and PR
-git add Gopkg.lock Gopkg.toml
-git commit -m "dep auto-update"
-git hub pull new --create-branch "$WORKING_BRANCH" --base "$CIRCLE_BRANCH" -m "$(pr_msg "dep ensure -update @ ${HUMAN_DATE}")"
+git add --all .
+git commit -m "$(echo "${1:-"auto-update"}")"
+git hub pull new --create-branch "$WORKING_BRANCH" --base "$CIRCLE_BRANCH" -m "$(pr_msg "auto-update @ ${HUMAN_DATE}")"
