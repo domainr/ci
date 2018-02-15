@@ -10,9 +10,9 @@ pr_msg() {
         cat <<MSG
 $1
 
-```
+\`\`\`
 $(git status --short)
-```
+\`\`\`
 MSG
 }
 
