@@ -21,7 +21,7 @@ git config hub.upstream "${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 git config hub.oauthtoken "$DOMAINRBOT_TOKEN"
 
 # Create new branch and PR
-git add Gopkg.lock Gopkg.toml
+git add -v Gopkg.lock Gopkg.toml
 MSG="$(pr_msg "dep ensure -update @ ${HUMAN_DATE}")"
 git commit -m "dep auto-update"
 git hub pull new --create-branch "$WORKING_BRANCH" --base "$CIRCLE_BRANCH" -m "$MSG"
