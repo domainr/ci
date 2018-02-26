@@ -31,3 +31,24 @@ We also git-tag some releases with Go version numbers, so if latest or
 $lake is broken by a bad merge, we can at least re-docker-tag that back onto
 the docker-tag from that git-tag and get *something* working, even if not the
 most recent.
+
+## Building locally
+
+We split the `Dockerfile` into two stages, so that it's easy to create the
+"still running as root" image.
+
+You can also use a local HTTP caching proxy, if you want to reduce network
+usage and fetch apt packages via that.  This is a Predefined ARG of Docker.
+
+Thus:
+
+```console
+% docker build --build-arg http_proxy=http://192.0.2.1:3128/ \
+    -t foo-root --target rootstage .
+
+% docker build --build-arg http_proxy=http://192.0.2.1:3128/ \
+    -t foo .
+
+% docker run -it --rm foo       # do things without root
+% docker run -it --rm foo-root  # do things with root
+```

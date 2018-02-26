@@ -5,25 +5,40 @@
 #
 # Multi-stage Dockerfile requires Docker 17.05 or higher.
 
-# Note: ARG goes out of scope on the next FROM line, so any ARGs wanted
-#       have to be repeated.  Try to avoid wanting them more than once.
-#       However, if you can live with the variable in the process environment
-#       of images launched from the final image, then ENV is a decent
-#       workaround.
+# Note:
+# ARG goes out of scope on the next FROM line, so any ARGs wanted have to be
+# repeated in the context where you want them.  However, there's special
+# treatment for any ARG which is declared before the very first FROM: the
+# values become the defaults for later ARG of the same name, and these ARGs
+# (and _only_ these ones) are available for use in the FROM lines themselves.
+#
+# Also, note that LABELs persist across inheritance boundaries, unless
+# overridden.
 
+# The images we work from:
 ARG GOLANG_BASE_IMAGE=1.10.0-stretch
-FROM golang:${GOLANG_BASE_IMAGE} AS rootstage
-ARG GOLANG_BASE_IMAGE=1.10.0-stretch
-#
-# Only for stamping into the labels, and tracking
+
+# Each of these is documented where we redeclare it, for use within the stages:
 ARG GOLANG_VERSION=1.10
-#
-# Dep readme says "It is strongly recommended that you use a released version."
 ARG DEP_VERSION=0.4.1
-#
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
+
+# -------------------------8< Stage: rootstage >8-------------------------
+
+FROM golang:${GOLANG_BASE_IMAGE} AS rootstage
+ARG GOLANG_BASE_IMAGE
+#
+# Only for stamping into the labels, and tracking
+ARG GOLANG_VERSION
+#
+# Dep readme says "It is strongly recommended that you use a released version."
+ARG DEP_VERSION
+#
+ARG RUNTIME_USER
+ARG RUNTIME_UID
+ARG RUNTIME_GID
 # Persisting this in ENV makes it available to RUN commands in the second stage:
 ENV RUNTIME_USER=${RUNTIME_USER}
 
@@ -99,13 +114,12 @@ LABEL com.domainr.name="Domainr Continuous Integration (root-stage)"
 LABEL com.domainr.baseimage="${GOLANG_BASE_IMAGE}"
 LABEL com.domainr.versions.go="${GOLANG_VERSION}"
 LABEL com.domainr.versions.dep="${DEP_VERSION}"
-# These aren't "our runtime" but "runtime we target"
-LABEL com.domainr.runtime.username="${RUNTIME_USER}"
-LABEL com.domainr.runtime.uid="${RUNTIME_UID}"
-LABEL com.domainr.runtime.gid="${RUNTIME_GID}"
-LABEL com.domainr.runtime.enabled="false"
+LABEL com.domainr.runtime.username="root"
+LABEL com.domainr.runtime.uid="0"
+LABEL com.domainr.runtime.gid="0"
+LABEL com.domainr.runtime.unprivileged="${RUNTIME_USER}"
 
-# ---------------------8< dropped privileges image >8---------------------
+# ----------------------8< Stage: generated image >8----------------------
 
 FROM rootstage
 
@@ -128,5 +142,10 @@ RUN go version && \
 	go get -u -v github.com/nbio/cart && \
 	true
 
+# Labels
+ARG RUNTIME_UID
+ARG RUNTIME_GID
 LABEL com.domainr.name="Domainr Continuous Integration"
-LABEL com.domainr.runtime.enabled="true"
+LABEL com.domainr.runtime.username="${RUNTIME_USER}"
+LABEL com.domainr.runtime.uid="${RUNTIME_UID}"
+LABEL com.domainr.runtime.gid="${RUNTIME_GID}"
