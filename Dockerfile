@@ -24,6 +24,17 @@ ARG DEP_VERSION=0.4.1
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
+#
+# Neat/Evil hack: while in CI, we use Docker-in-Docker, for local development
+# it's nicer to bind-mount /var/run/docker.sock into the instance, so that
+# you can run `docker ps` and see the outside docker.  The permissions and
+# numeric ownership remain unchanged between the outside and inside.
+# Using `docker-machine` (Boot2Docker version 18.02.0-ce), the socket is
+# 0660 root:docker, where group docker is 100.  Assuming that we're derived
+# from stretch (per default) group 100 is "users", which is _entirely_
+# reasonable for the only runtime user to be a member of.  So go for it.
+# Keep this as a comma-separated list of non-negative integers.
+ARG RUNTIME_SUPGIDS=100
 
 # -------------------------8< Stage: rootstage >8-------------------------
 
@@ -39,6 +50,7 @@ ARG DEP_VERSION
 ARG RUNTIME_USER
 ARG RUNTIME_UID
 ARG RUNTIME_GID
+ARG RUNTIME_SUPGIDS
 # Persisting this in ENV makes it available to RUN commands in the second stage:
 ENV RUNTIME_USER=${RUNTIME_USER}
 
@@ -46,6 +58,7 @@ ENV RUNTIME_USER=${RUNTIME_USER}
 # need 'nc' for sanity checks in one project; deb netcat-traditional
 # need 'git-hub' for GitHub's hub command, for one-off runners using this CI image
 #   but link it to the more common name found outside Debian, too
+# need 'less' for sanity
 
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	apt-get update \
@@ -54,7 +67,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 		apt-transport-https \
 		software-properties-common \
 		netcat-traditional netcat zip \
-		git-hub \
+		git-hub less \
 	&& ln -s /usr/bin/git-hub /usr/local/bin/hub
 # defer removing /var/lib/apt/lists/* until done with apt-get below
 
@@ -76,8 +89,8 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	&& apt-get -q -y install docker-ce \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -g ${RUNTIME_GID} ${RUNTIME_USER} && \
-    useradd -p '*' -u ${RUNTIME_UID} -g ${RUNTIME_USER} -m ${RUNTIME_USER}
+RUN groupadd -g "${RUNTIME_GID}" "${RUNTIME_USER}" && \
+    useradd -p '*' -u "${RUNTIME_UID}" -g "${RUNTIME_USER}" -G "${RUNTIME_SUPGIDS}" -m "${RUNTIME_USER}"
 
 # Install Heroku
 RUN cd /tmp \
@@ -145,7 +158,9 @@ RUN go version && \
 # Labels
 ARG RUNTIME_UID
 ARG RUNTIME_GID
+ARG RUNTIME_SUPGIDS
 LABEL com.domainr.name="Domainr Continuous Integration"
 LABEL com.domainr.runtime.username="${RUNTIME_USER}"
 LABEL com.domainr.runtime.uid="${RUNTIME_UID}"
 LABEL com.domainr.runtime.gid="${RUNTIME_GID}"
+LABEL com.domainr.runtime.supgids="${RUNTIME_SUPGIDS}"
