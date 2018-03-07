@@ -5,13 +5,12 @@ set -u
 
 BRANCH="${CIRCLE_BRANCH:-$1}"
 
-commit_msg() {
-        cat <<MSG
-$1
+COMMIT_MSG=$(cat <<MSG
+${2:-"auto-update"}
 
 $(git status --short)
 MSG
-}
+)
 
-commit_msg ${2:-"auto-update"} | git commit -F -
-git push origin "$BRANCH"
+echo "$COMMIT_MSG" | git commit -F -
+echo git push origin "$BRANCH"
