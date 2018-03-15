@@ -11,7 +11,7 @@ pr_msg() {
 $1
 
 \`\`\`
-$(git status --short)
+$(test -f .git/COMMIT_PREPAREDMSG && cat .git/COMMIT_PREPAREDMSG || git status --short)
 \`\`\`
 MSG
 }
