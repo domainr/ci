@@ -13,4 +13,4 @@ MSG
 )
 
 echo "$COMMIT_MSG" | git commit -F -
-echo git push origin "$BRANCH"
+git push origin "$BRANCH"
