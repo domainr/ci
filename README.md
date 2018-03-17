@@ -25,7 +25,7 @@ and we're lucky enough to spot those problems, then we can update the lake
 name in Docker Hub before the merge, so that future builds get a new lake name
 and dependencies can update independently.
 
-The first is `swan`, in case this experiment takes a swan dive. Next: [Bowman Lake](https://en.wikipedia.org/wiki/Bowman_Lake_(Montana)) in Glacier National Park.
+The first is `swan`, in case this experiment takes a swan dive. Next: [Bowman Lake](https://en.wikipedia.org/wiki/Bowman_Lake_%28Montana%29) in Glacier National Park.
 
 We also git-tag some releases with Go version numbers, so if latest or
 $lake is broken by a bad merge, we can at least re-docker-tag that back onto
