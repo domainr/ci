@@ -16,10 +16,10 @@
 # overridden.
 
 # The images we work from:
-ARG GOLANG_BASE_IMAGE=1.10.0-stretch
+ARG GOLANG_BASE_IMAGE=1.10.1-stretch
 
 # Each of these is documented where we redeclare it, for use within the stages:
-ARG GOLANG_VERSION=1.10
+ARG GOLANG_VERSION=1.10.1
 ARG DEP_VERSION=0.4.1
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
@@ -64,10 +64,10 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	apt-get update \
 	&& apt-get -q -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" upgrade \
 	&& apt-get install -q -y --no-install-recommends \
-		apt-transport-https \
-		software-properties-common \
-		netcat-traditional netcat zip \
-		git-hub less \
+	apt-transport-https \
+	software-properties-common \
+	netcat-traditional netcat zip \
+	git-hub less \
 	&& ln -s /usr/bin/git-hub /usr/local/bin/hub
 # defer removing /var/lib/apt/lists/* until done with apt-get below
 
@@ -81,16 +81,16 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true; \
 	&& curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | gpg --dearmor > /etc/apt/keys/docker.gpg \
 	&& printf > /etc/apt/preferences.d/docker.pref 'Package: *\nPin: origin download.docker.com\nPin-Priority: 100\n' \
 	&& echo \
-		"deb [arch=amd64 signed-by=/etc/apt/keys/docker.gpg] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")" \
-		$(lsb_release -cs) \
-		stable \
-		> /etc/apt/sources.list.d/docker.list \
+	"deb [arch=amd64 signed-by=/etc/apt/keys/docker.gpg] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")" \
+	$(lsb_release -cs) \
+	stable \
+	> /etc/apt/sources.list.d/docker.list \
 	&& apt-get update \
 	&& apt-get -q -y install docker-ce \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g "${RUNTIME_GID}" "${RUNTIME_USER}" && \
-    useradd -p '*' -u "${RUNTIME_UID}" -g "${RUNTIME_USER}" -G "${RUNTIME_SUPGIDS}" -m "${RUNTIME_USER}"
+	useradd -p '*' -u "${RUNTIME_UID}" -g "${RUNTIME_USER}" -G "${RUNTIME_SUPGIDS}" -m "${RUNTIME_USER}"
 
 # Install Heroku
 RUN cd /tmp \
