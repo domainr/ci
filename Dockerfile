@@ -15,16 +15,15 @@
 # Also, note that LABELs persist across inheritance boundaries, unless
 # overridden.
 
-# The images we work from:
-ARG GOLANG_BASE_IMAGE=1.10.0-stretch
-
-# Each of these is documented where we redeclare it, for use within the stages:
-ARG GOLANG_VERSION=1.10
+ARG GOLANG_VERSION=1.10.3
 ARG DEP_VERSION=0.4.1
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
-#
+
+# Base image
+ARG GOLANG_BASE_IMAGE=${GOLANG_VERSION}-stretch
+
 # Neat/Evil hack: while in CI, we use Docker-in-Docker, for local development
 # it's nicer to bind-mount /var/run/docker.sock into the instance, so that
 # you can run `docker ps` and see the outside docker.  The permissions and
