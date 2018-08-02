@@ -16,7 +16,7 @@
 # overridden.
 
 ARG GOLANG_VERSION=1.10.3
-ARG DEP_VERSION=0.4.1
+ARG DEP_VERSION=0.5.0
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
@@ -107,7 +107,7 @@ RUN cd /tmp && mkdir release \
 	&& curl -fsSL "https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64" -o release/dep-linux-amd64 \
 	&& have="$(sha256sum release/dep-linux-amd64)" \
 	&& want="$(curl -fsSL "https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64.sha256")" \
-	&& [ ".$have" = ".$want" ] \
+	&& [ "${have%% *}" = "${want%% *}" ] \
 	&& echo "checksum match: $have" \
 	&& chmod 0755 release/dep-linux-amd64 \
 	&& mv release/dep-linux-amd64 /usr/local/bin/dep \
