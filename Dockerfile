@@ -15,7 +15,7 @@
 # Also, note that LABELs persist across inheritance boundaries, unless
 # overridden.
 
-ARG GOLANG_VERSION=1.10.3
+ARG GOLANG_VERSION=1.11
 ARG DEP_VERSION=0.5.0
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
