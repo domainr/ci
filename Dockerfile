@@ -16,6 +16,7 @@
 # overridden.
 
 ARG GOLANG_VERSION=1.12
+# FIXME: remove dep
 ARG DEP_VERSION=0.5.0
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
@@ -105,6 +106,7 @@ RUN cd /tmp \
 	&& rm heroku.tar.gz \
 	&& heroku version
 
+# FIXME: remove dep
 # Install Dep
 # There are no signatures, only a checksum to download from the same place, which buys us nothing security-wise, but does
 # let us know about corruption.  We'll check it, most easily by downloading to same name that was signed.
