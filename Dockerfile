@@ -21,8 +21,9 @@ ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
 
-# Base image
-ARG GOLANG_BASE_IMAGE=${GOLANG_VERSION}-stretch
+# Base image:
+# https://hub.docker.com/r/circleci/golang
+ARG GOLANG_BASE_IMAGE=circleci/golang:${GOLANG_VERSION}-stretch-node-browsers
 
 # Neat/Evil hack: while in CI, we use Docker-in-Docker, for local development
 # it's nicer to bind-mount /var/run/docker.sock into the instance, so that
@@ -37,7 +38,11 @@ ARG RUNTIME_SUPGIDS=100
 
 # -------------------------8< Stage: rootstage >8-------------------------
 
-FROM golang:${GOLANG_BASE_IMAGE} AS rootstage
+FROM ${GOLANG_BASE_IMAGE} AS rootstage
+
+# Need root user for apt-get
+USER root
+
 ARG GOLANG_BASE_IMAGE
 #
 # Only for stamping into the labels, and tracking
