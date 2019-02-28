@@ -16,13 +16,15 @@
 # overridden.
 
 ARG GOLANG_VERSION=1.12
+# FIXME: remove dep
 ARG DEP_VERSION=0.5.0
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
 
-# Base image
-ARG GOLANG_BASE_IMAGE=${GOLANG_VERSION}-stretch
+# Base image:
+# https://hub.docker.com/r/circleci/golang
+ARG GOLANG_BASE_IMAGE=circleci/golang:${GOLANG_VERSION}-stretch-node-browsers
 
 # Neat/Evil hack: while in CI, we use Docker-in-Docker, for local development
 # it's nicer to bind-mount /var/run/docker.sock into the instance, so that
@@ -37,7 +39,11 @@ ARG RUNTIME_SUPGIDS=100
 
 # -------------------------8< Stage: rootstage >8-------------------------
 
-FROM golang:${GOLANG_BASE_IMAGE} AS rootstage
+FROM ${GOLANG_BASE_IMAGE} AS rootstage
+
+# Need root user for apt-get
+USER root
+
 ARG GOLANG_BASE_IMAGE
 #
 # Only for stamping into the labels, and tracking
@@ -100,6 +106,7 @@ RUN cd /tmp \
 	&& rm heroku.tar.gz \
 	&& heroku version
 
+# FIXME: remove dep
 # Install Dep
 # There are no signatures, only a checksum to download from the same place, which buys us nothing security-wise, but does
 # let us know about corruption.  We'll check it, most easily by downloading to same name that was signed.
