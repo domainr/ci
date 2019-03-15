@@ -16,8 +16,6 @@
 # overridden.
 
 ARG GOLANG_VERSION=1.12
-# FIXME: remove dep
-ARG DEP_VERSION=0.5.0
 ARG RUNTIME_USER=domainr
 ARG RUNTIME_UID=1001
 ARG RUNTIME_GID=1001
@@ -106,20 +104,6 @@ RUN cd /tmp \
 	&& rm heroku.tar.gz \
 	&& heroku version
 
-# FIXME: remove dep
-# Install Dep
-# There are no signatures, only a checksum to download from the same place, which buys us nothing security-wise, but does
-# let us know about corruption.  We'll check it, most easily by downloading to same name that was signed.
-RUN cd /tmp && mkdir release \
-	&& curl -fsSL "https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64" -o release/dep-linux-amd64 \
-	&& have="$(sha256sum release/dep-linux-amd64)" \
-	&& want="$(curl -fsSL "https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64.sha256")" \
-	&& [ "${have%% *}" = "${want%% *}" ] \
-	&& echo "checksum match: $have" \
-	&& chmod 0755 release/dep-linux-amd64 \
-	&& mv release/dep-linux-amd64 /usr/local/bin/dep \
-	&& dep version
-
 # Copy in local scripts
 COPY cmd/* /usr/local/bin/
 RUN chmod -v +x /usr/local/bin/*
@@ -132,7 +116,6 @@ LABEL maintainer="ops+docker+ci@domainr.com"
 LABEL com.domainr.name="Domainr Continuous Integration (root-stage)"
 LABEL com.domainr.baseimage="${GOLANG_BASE_IMAGE}"
 LABEL com.domainr.versions.go="${GOLANG_VERSION}"
-LABEL com.domainr.versions.dep="${DEP_VERSION}"
 LABEL com.domainr.runtime.username="root"
 LABEL com.domainr.runtime.uid="0"
 LABEL com.domainr.runtime.gid="0"
